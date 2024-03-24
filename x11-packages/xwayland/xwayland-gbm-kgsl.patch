@@ -1,0 +1,168 @@
+diff --git a/hw/xwayland/xwayland-dmabuf.c b/hw/xwayland/xwayland-dmabuf.c
+index e485e5b1c..5aec26741 100644
+--- a/hw/xwayland/xwayland-dmabuf.c
++++ b/hw/xwayland/xwayland-dmabuf.c
+@@ -45,7 +45,9 @@ xwl_device_formats_destroy(struct xwl_device_formats *dev_formats)
+     for (int j = 0; j < dev_formats->num_formats; j++)
+         free(dev_formats->formats[j].modifiers);
+     free(dev_formats->formats);
++#ifndef __TERMUX__
+     drmFreeDevice(&dev_formats->drm_dev);
++#endif
+ }
+ 
+ void
+@@ -74,7 +76,9 @@ xwl_dmabuf_feedback_destroy(struct xwl_dmabuf_feedback *xwl_feedback)
+         zwp_linux_dmabuf_feedback_v1_destroy(xwl_feedback->dmabuf_feedback);
+ 
+     xwl_feedback->dmabuf_feedback = NULL;
++#ifndef __TERMUX__
+     drmFreeDevice(&xwl_feedback->main_dev);
++#endif
+ }
+ 
+ static Bool
+@@ -200,7 +204,9 @@ xwl_dmabuf_get_formats_for_device(struct xwl_dmabuf_feedback *xwl_feedback, drmD
+ 
+     /* go through all matching sets of tranches for the window's device */
+     for (int i = 0; i < xwl_feedback->dev_formats_len; i++) {
++#ifndef __TERMUX__
+         if (drmDevicesEqual(xwl_feedback->dev_formats[i].drm_dev, device)) {
++#endif
+             struct xwl_device_formats *dev_formats = &xwl_feedback->dev_formats[i];
+ 
+             /* Append the formats from this tranche to the list */
+@@ -221,7 +227,9 @@ xwl_dmabuf_get_formats_for_device(struct xwl_dmabuf_feedback *xwl_feedback, drmD
+                 if (!found)
+                     ret[count++] = dev_formats->formats[j].format;
+             }
++#ifndef __TERMUX__
+         }
++#endif
+     }
+ 
+     *num_formats = count;
+@@ -301,7 +309,11 @@ xwl_dmabuf_get_modifiers_for_device(struct xwl_dmabuf_feedback *feedback,
+     for (int i = 0; i < feedback->dev_formats_len; i++) {
+         struct xwl_device_formats *dev_formats = &feedback->dev_formats[i];
+ 
++#ifndef __TERMUX__
+         if (drmDevicesEqual(dev_formats->drm_dev, device) &&
++#else
++        if (
++#endif
+             xwl_dmabuf_get_modifiers_for_format(dev_formats->formats,
+                                                 dev_formats->num_formats,
+                                                 format, num_modifiers, modifiers)) {
+@@ -467,6 +479,7 @@ xwl_dmabuf_feedback_main_device(void *data,
+                                 struct zwp_linux_dmabuf_feedback_v1 *dmabuf_feedback,
+                                 struct wl_array *dev)
+ {
++#ifndef __TERMUX__
+     struct xwl_dmabuf_feedback *xwl_feedback = data;
+     dev_t devid;
+ 
+@@ -479,6 +492,7 @@ xwl_dmabuf_feedback_main_device(void *data,
+ 
+     if (drmGetDeviceFromDevId(devid, 0, &xwl_feedback->main_dev) != 0)
+         ErrorF("linux_dmabuf_feedback.main_device: Failed to fetch DRM device\n");
++#endif
+ }
+ 
+ static void
+@@ -486,6 +500,7 @@ xwl_dmabuf_feedback_tranche_target_device(void *data,
+                                           struct zwp_linux_dmabuf_feedback_v1 *dmabuf_feedback,
+                                           struct wl_array *dev)
+ {
++#ifndef __TERMUX__
+     struct xwl_dmabuf_feedback *xwl_feedback = data;
+     dev_t devid;
+ 
+@@ -496,6 +511,7 @@ xwl_dmabuf_feedback_tranche_target_device(void *data,
+ 
+     if (drmGetDeviceFromDevId(devid, 0, &xwl_feedback->tmp_tranche.drm_dev) != 0)
+         ErrorF("linux_dmabuf_feedback.tranche_target_device: Failed to fetch DRM device\n");
++#endif
+ }
+ 
+ static void
+@@ -567,10 +583,12 @@ xwl_dmabuf_feedback_tranche_done(void *data,
+      * triggered first
+      */
+ 
++#ifndef __TERMUX__
+     if (xwl_feedback->tmp_tranche.drm_dev == NULL) {
+         xwl_device_formats_destroy(&xwl_feedback->tmp_tranche);
+         goto out;
+     }
++#endif
+ 
+     /*
+      * First check if there is an existing tranche for this device+flags combo. We
+@@ -581,7 +599,11 @@ xwl_dmabuf_feedback_tranche_done(void *data,
+     for (int i = 0; i < xwl_feedback->dev_formats_len; i++) {
+         tranche = &xwl_feedback->dev_formats[i];
+         if (tranche->supports_scanout == xwl_feedback->tmp_tranche.supports_scanout &&
++#ifndef __TERMUX__
+             drmDevicesEqual(tranche->drm_dev, xwl_feedback->tmp_tranche.drm_dev)) {
++#else
++            1) {
++#endif
+             appended = TRUE;
+ 
+             /* Add all format/mods to this tranche */
+diff --git a/hw/xwayland/xwayland-glamor-gbm.c b/hw/xwayland/xwayland-glamor-gbm.c
+index ebc990b57..9a9402d5a 100644
+--- a/hw/xwayland/xwayland-glamor-gbm.c
++++ b/hw/xwayland/xwayland-glamor-gbm.c
+@@ -631,7 +631,9 @@ xwl_glamor_gbm_cleanup(struct xwl_screen *xwl_screen)
+ 
+     if (xwl_gbm->device_name)
+         free(xwl_gbm->device_name);
++#ifndef __TERMUX__
+     drmFreeDevice(&xwl_gbm->device);
++#endif
+     if (xwl_gbm->drm_fd)
+         close(xwl_gbm->drm_fd);
+     if (xwl_gbm->drm)
+@@ -1370,6 +1372,7 @@ Bool
+ xwl_screen_set_drm_interface(struct xwl_screen *xwl_screen,
+                              uint32_t id, uint32_t version)
+ {
++#ifndef __TERMUX__
+     struct xwl_gbm_private *xwl_gbm = xwl_gbm_get(xwl_screen);
+ 
+     if (version < 2)
+@@ -1380,6 +1383,7 @@ xwl_screen_set_drm_interface(struct xwl_screen *xwl_screen,
+     wl_drm_add_listener(xwl_gbm->drm, &xwl_drm_listener, xwl_screen);
+     xwl_screen->expecting_event++;
+ 
++#endif
+     return TRUE;
+ }
+ 
+@@ -1648,6 +1652,7 @@ static Bool
+ xwl_glamor_gbm_init_main_dev(struct xwl_screen *xwl_screen)
+ {
+     struct xwl_gbm_private *xwl_gbm = xwl_gbm_get(xwl_screen);
++#ifndef __TERMUX__
+     drmDevice *main_dev;
+ 
+     while (!xwl_screen->default_feedback.feedback_done) {
+@@ -1685,6 +1690,16 @@ xwl_glamor_gbm_init_main_dev(struct xwl_screen *xwl_screen)
+                xwl_gbm->device_name);
+         return FALSE;
+     }
++#else
++    const char *env = getenv("MESA_LOADER_DRIVER_OVERRIDE");
++    xwl_gbm->drm_fd = -1;
++
++    if (env && strcmp(env, "kgsl") == 0)
++        xwl_gbm->drm_fd = open("/dev/kgsl-3d0", O_RDWR);
++
++    if (xwl_gbm->drm_fd < 0)
++        return FALSE;
++#endif
+ 
+     xwl_gbm->fd_render_node = TRUE;
+     return TRUE;
