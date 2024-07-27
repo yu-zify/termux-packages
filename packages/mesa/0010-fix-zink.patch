@@ -1,0 +1,22 @@
+diff --git a/src/gallium/drivers/zink/zink_screen.c b/src/gallium/drivers/zink/zink_screen.c
+index 2027eeb6ef0..73a3ae29202 100644
+--- a/src/gallium/drivers/zink/zink_screen.c
++++ b/src/gallium/drivers/zink/zink_screen.c
+@@ -2404,7 +2409,7 @@ VkSemaphore
+ zink_screen_export_dmabuf_semaphore(struct zink_screen *screen, struct zink_resource *res)
+ {
+    VkSemaphore sem = VK_NULL_HANDLE;
+-#if defined(HAVE_LIBDRM) && (DETECT_OS_LINUX || DETECT_OS_BSD)
++#if defined(HAVE_LIBDRM) && (DETECT_OS_LINUX || DETECT_OS_BSD) && !defined (__TERMUX__)
+    struct dma_buf_export_sync_file export = {
+       .flags = DMA_BUF_SYNC_RW,
+       .fd = -1,
+@@ -2459,7 +2464,7 @@ zink_screen_export_dmabuf_semaphore(struct zink_screen *screen, struct zink_reso
+ bool
+ zink_screen_import_dmabuf_semaphore(struct zink_screen *screen, struct zink_resource *res, VkSemaphore sem)
+ {
+-#if defined(HAVE_LIBDRM) && (DETECT_OS_LINUX || DETECT_OS_BSD)
++#if defined(HAVE_LIBDRM) && (DETECT_OS_LINUX || DETECT_OS_BSD) && !defined (__TERMUX__)
+    const VkSemaphoreGetFdInfoKHR get_fd_info = {
+       .sType = VK_STRUCTURE_TYPE_SEMAPHORE_GET_FD_INFO_KHR,
+       .semaphore = sem,
