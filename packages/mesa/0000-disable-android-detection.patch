@@ -1,4 +1,20 @@
-+++ ./src/util/detect_os.h
+diff --git a/include/vulkan/vk_android_native_buffer.h b/include/vulkan/vk_android_native_buffer.h
+index 21f82ef57a2..5c67746ca44 100644
+--- a/include/vulkan/vk_android_native_buffer.h
++++ b/include/vulkan/vk_android_native_buffer.h
+@@ -17,7 +17,7 @@
+  * system rather the build target.
+  */
+ 
+-#if defined(__ANDROID__) || defined(ANDROID)
++#if 0
+ 
+ #include <cutils/native_handle.h>
+ #if ANDROID_API_LEVEL < 28
+diff --git a/src/util/detect_os.h b/src/util/detect_os.h
+index 86286dfbe70..35c213b3265 100644
+--- a/src/util/detect_os.h
++++ b/src/util/detect_os.h
 @@ -24,7 +24,7 @@
   * Android defines __linux__, so DETECT_OS_LINUX and DETECT_OS_POSIX will
   * also be defined.
@@ -8,11 +24,3 @@
  #define DETECT_OS_ANDROID 1
  #endif
  
-+++ ./include/vulkan/vk_android_native_buffer.h	
-@@ -1,5 +1,5 @@
- /* MESA: A hack to avoid #ifdefs in driver code. */
--#ifdef __ANDROID__
-+#if 0
- 
- #include <cutils/native_handle.h>
- #if ANDROID_API_LEVEL < 28
