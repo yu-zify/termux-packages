@@ -33,6 +33,11 @@ termux_step_configure() {
 		-e "s|@TERMUX_LDFLAGS@|$LDFLAGS|g" \
 		-e "s|@TERMUX_LDLIBS@|log|g" \
 		$TERMUX_PKG_BUILDER_DIR/busybox.config > .config
+  echo $TERMUX_PREFIX
+  echo $TERMUX_STANDALONE_TOOLCHAIN
+  echo ${TERMUX_HOST_PLATFORM}
+  echo $CFLAGS
+  echo $LDFLAGS
 	unset CFLAGS LDFLAGS
 	make oldconfig
 }
